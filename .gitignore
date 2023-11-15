@@ -1,0 +1,4 @@
+data/
+notebooks/
+scripts/__pycache__/
+commands.md
