@@ -1,6 +1,7 @@
 import chess
 import logging
 import numpy as np
+import torch
 
 
 def get_logging_config():
@@ -11,6 +12,73 @@ def get_logging_config():
         level=logging.INFO, 
         datefmt="%I:%M:%S"
     )
+
+
+def seed_everything(seed):
+    """Sets the random seed for numpy and torch.
+
+    Args:
+        seed (int): The random seed.
+    """
+
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+
+
+def save_state_dict(name, model, optimizer, scheduler, train_loss, dev_loss, epoch_idx, train_loss_idx):
+    """Saves the model state dictionary.
+
+    Args:
+        model (torch.nn.Module): The model.
+        optimizer (torch.optim.Optimizer): The optimizer.
+        scheduler (torch.optim.lr_scheduler._LRScheduler): The scheduler.
+        train_loss (float): The training loss.
+        dev_loss (float): The dev loss.
+        epoch_idx (int): The epoch index.
+        train_loss_idx (int): The train loss index.
+    """
+
+    torch.save(
+        {
+            "model_state_dict": model.state_dict(),
+            "optimizer_state_dict": optimizer.state_dict(),
+            "scheduler_state_dict": scheduler.state_dict(),
+            "train_loss": train_loss,
+            "dev_loss": dev_loss,
+            "epoch_idx": epoch_idx,
+            "train_loss_idx": train_loss_idx,
+        },
+        name
+    )
+
+
+def load_state_dict(name, model, optimizer, scheduler):
+    """Loads the model state dictionary.
+
+    Args:
+        model (torch.nn.Module): The model.
+        optimizer (torch.optim.Optimizer): The optimizer.
+        scheduler (torch.optim.lr_scheduler._LRScheduler): The scheduler.
+
+    Returns:
+        float: The training loss.
+        float: The dev loss.
+        int: The epoch index.
+        int: The train loss index.
+    """
+
+    checkpoint = torch.load(name)
+    model.load_state_dict(checkpoint["model_state_dict"])
+    optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+    scheduler.load_state_dict(checkpoint["scheduler_state_dict"])
+    train_loss = checkpoint["loss"]
+    dev_loss = checkpoint["dev_loss"]
+    epoch_idx = checkpoint["epoch_idx"]
+    train_loss_idx = checkpoint["train_loss_idx"]
+    return train_loss, dev_loss, epoch_idx, train_loss_idx
+
 
 def write_txt(txt, path):
     """Writes a list of strings to a text file.
