@@ -120,43 +120,12 @@ def parse_args():
     """Parses command line arguments."""
 
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--pgn-file",
-        type=str,
-        required=True,
-        help="""The path to the PGN file."""
-    )
-    parser.add_argument(
-        "--output-dir",
-        type=str,
-        required=True,
-        help="""The directory to save the positions."""
-    )
-    parser.add_argument(
-        "--num-positions",
-        type=int,
-        default=10,
-        help="""The number of positions to extract from each game. 
-                If there are fewer positions in a game, all positions will be extracted."""
-    )
-    parser.add_argument(
-        "--skip-first-n-moves",
-        type=int,
-        default=5,
-        help="""The number of moves to skip at the beginning of each game."""
-    )
-    parser.add_argument(
-        "--file-names",
-        default="white.txt,black.txt",
-        type=validate_two_file_names,
-        help="""Specify exactly two file names separated by a comma.
-                E.g. white.txt,black.txt"""
-    )
-    parser.add_argument(
-        "--verbose",
-        action="store_true",
-        help="""Whether to print logs."""
-    )
+    parser.add_argument("--pgn-file", type=str, required=True, help="The path to the PGN file.")
+    parser.add_argument("--output-dir", type=str, required=True, help="The directory to save the positions.")
+    parser.add_argument("--num-positions", type=int, default=10, help="The number of positions to extract from each game. If there are fewer positions in a game, all positions will be extracted.")
+    parser.add_argument("--skip-first-n-moves", type=int, default=5, help="The number of moves to skip at the beginning of each game.")
+    parser.add_argument("--file-names", default="white.txt,black.txt", type=validate_two_file_names, help="Specify exactly two file names separated by a comma. E.g. white.txt,black.txt")
+    parser.add_argument("--verbose", action="store_true", help="Whether to print logs.")
     return parser.parse_args()
 
 

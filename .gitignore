@@ -1,4 +1,6 @@
 data/
 notebooks/
 scripts/__pycache__/
+logs/
+runs/
 commands.md
