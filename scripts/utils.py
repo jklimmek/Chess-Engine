@@ -54,7 +54,7 @@ def save_state_dict(name, model, optimizer, scheduler, train_loss, dev_loss, epo
     )
 
 
-def load_state_dict(name, model, optimizer, scheduler):
+def load_state_dict(name, model, optimizer=None, scheduler=None):
     """Loads the model state dictionary.
 
     Args:
@@ -71,9 +71,12 @@ def load_state_dict(name, model, optimizer, scheduler):
 
     checkpoint = torch.load(name)
     model.load_state_dict(checkpoint["model_state_dict"])
-    optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
-    scheduler.load_state_dict(checkpoint["scheduler_state_dict"])
-    train_loss = checkpoint["loss"]
+    if optimizer is not None:
+        optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+    if scheduler is not None:
+        scheduler.load_state_dict(checkpoint["scheduler_state_dict"])
+        
+    train_loss = checkpoint["train_loss"]
     dev_loss = checkpoint["dev_loss"]
     epoch_idx = checkpoint["epoch_idx"]
     train_loss_idx = checkpoint["train_loss_idx"]
