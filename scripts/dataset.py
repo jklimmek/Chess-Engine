@@ -6,7 +6,6 @@ from .utils import *
 
 class DeepChessDataset(Dataset):
     """A dataset for training DeepChess engine.
-    https://www.cs.tau.ac.il/~wolf/papers/deepchess.pdf
 
     This dataset takes a list of one-hot encoded chess positions.
     The dataset will return a tuple of the position and the label.
@@ -29,15 +28,22 @@ class DeepChessDataset(Dataset):
             return self.black_positions[index], torch.tensor([0, 1], dtype=torch.int32)
 
 
-class AEDataset(Dataset):
-    """A dataset for training autoencoder."""
+class DBNDataset(Dataset):
+    """A dataset for training DBN network.
+    
+    Depending on the convert_mode, this dataset will return a list of encoded chess positions.
+    """
 
-    def __init__(self, positions):
+    def __init__(self, positions, convert_mode="none"):
         super().__init__()
         self.positions = positions
+        self.convert_mode = convert_mode
 
     def __len__(self):
         return len(self.positions)
     
     def __getitem__(self, index):
-        return fen_to_array(self.positions[index])
+        if self.convert_mode == "none":
+            return self.positions[index]
+        elif self.convert_mode == "fen_to_array":
+            return fen_to_array(self.positions[index])
