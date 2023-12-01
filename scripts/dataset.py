@@ -12,38 +12,38 @@ class DeepChessDataset(Dataset):
     The label represents which move is preffered.
     """
 
-    def __init__(self, white_positions, black_positions):
+    def __init__(self, white_positions, black_positions, poses_per_epoch=1000000):
         super().__init__()
         self.white_positions = white_positions
         self.black_positions = black_positions
+        self.poses_per_epoch = poses_per_epoch
 
     def __len__(self):
-        return len(self.white_positions) + len(self.black_positions)
+        return self.poses_per_epoch
     
     def __getitem__(self, index):
-        if index < len(self.white_positions):
-            return self.white_positions[index], torch.tensor([1, 0], dtype=torch.int32)
+        white_index = torch.randint(len(self.white_positions), (1,)).item()
+        black_index = torch.randint(len(self.black_positions), (1,)).item()
+        white_position = fen_to_array(self.white_positions[white_index])
+        black_position = fen_to_array(self.black_positions[black_index])
+
+        side = torch.randint(2, (1,)).item()
+
+        if side == 0:
+            return white_position, black_position, torch.tensor([1., 0.], dtype=torch.float32)
         else:
-            index -= len(self.white_positions)
-            return self.black_positions[index], torch.tensor([0, 1], dtype=torch.int32)
+            return black_position, white_position, torch.tensor([0., 1.], dtype=torch.float32)
 
 
-class DBNDataset(Dataset):
-    """A dataset for training DBN network.
-    
-    Depending on the convert_mode, this dataset will return a list of encoded chess positions.
-    """
+class AEDataset(Dataset):
+    """A dataset for training autoencoder."""
 
-    def __init__(self, positions, convert_mode="none"):
+    def __init__(self, positions):
         super().__init__()
         self.positions = positions
-        self.convert_mode = convert_mode
 
     def __len__(self):
         return len(self.positions)
     
     def __getitem__(self, index):
-        if self.convert_mode == "none":
-            return self.positions[index]
-        elif self.convert_mode == "fen_to_array":
-            return fen_to_array(self.positions[index])
+        return fen_to_array(self.positions[index])

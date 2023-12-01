@@ -27,62 +27,6 @@ def seed_everything(seed):
         torch.cuda.manual_seed_all(seed)
 
 
-def save_state_dict(name, model, optimizer, scheduler, train_loss, dev_loss, epoch_idx, train_loss_idx):
-    """Saves the model state dictionary.
-
-    Args:
-        model (torch.nn.Module): The model.
-        optimizer (torch.optim.Optimizer): The optimizer.
-        scheduler (torch.optim.lr_scheduler._LRScheduler): The scheduler.
-        train_loss (float): The training loss.
-        dev_loss (float): The dev loss.
-        epoch_idx (int): The epoch index.
-        train_loss_idx (int): The train loss index.
-    """
-
-    torch.save(
-        {
-            "model_state_dict": model.state_dict(),
-            "optimizer_state_dict": optimizer.state_dict(),
-            "scheduler_state_dict": scheduler.state_dict(),
-            "train_loss": train_loss,
-            "dev_loss": dev_loss,
-            "epoch_idx": epoch_idx,
-            "train_loss_idx": train_loss_idx,
-        },
-        name
-    )
-
-
-def load_state_dict(name, model, optimizer=None, scheduler=None):
-    """Loads the model state dictionary.
-
-    Args:
-        model (torch.nn.Module): The model.
-        optimizer (torch.optim.Optimizer): The optimizer.
-        scheduler (torch.optim.lr_scheduler._LRScheduler): The scheduler.
-
-    Returns:
-        float: The training loss.
-        float: The dev loss.
-        int: The epoch index.
-        int: The train loss index.
-    """
-
-    checkpoint = torch.load(name)
-    model.load_state_dict(checkpoint["model_state_dict"])
-    if optimizer is not None:
-        optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
-    if scheduler is not None:
-        scheduler.load_state_dict(checkpoint["scheduler_state_dict"])
-        
-    train_loss = checkpoint["train_loss"]
-    dev_loss = checkpoint["dev_loss"]
-    epoch_idx = checkpoint["epoch_idx"]
-    train_loss_idx = checkpoint["train_loss_idx"]
-    return train_loss, dev_loss, epoch_idx, train_loss_idx
-
-
 def write_txt(txt, path):
     """Writes a list of strings to a text file.
 
@@ -108,9 +52,74 @@ def read_txt(path):
 
     with open(path, "r") as f:
         return [line.strip() for line in f.readlines()]
+
+
+def save_state_dict(name, model, optimizer=None, scheduler=None, train_loss=None, dev_loss=None, 
+                    train_accuracy=None, dev_accuracy=None, epoch_idx=None, train_loss_idx=None):
+    """Saves the model state dictionary.
+
+    Args:
+        model (torch.nn.Module): The model.
+        optimizer (torch.optim.Optimizer): The optimizer.
+        scheduler (torch.optim.lr_scheduler._LRScheduler): The scheduler.
+        train_loss (float): The training loss.
+        dev_loss (float): The dev loss.
+        train_accuracy (float): The training accuracy.
+        dev_accuracy (float): The dev accuracy.
+        epoch_idx (int): The epoch index.
+        train_loss_idx (int): The train loss index.
+    """
+
+    torch.save(
+        {
+            "model_state_dict": model.state_dict(),
+            "optimizer_state_dict": optimizer.state_dict() if optimizer is not None else None,
+            "scheduler_state_dict": scheduler.state_dict() if optimizer is not None else None,
+            "train_loss": train_loss if optimizer is not None else None,
+            "dev_loss": dev_loss if optimizer is not None else None,
+            "train_accuracy": train_accuracy if optimizer is not None else None,
+            "dev_accuracy": dev_accuracy if optimizer is not None else None,
+            "epoch_idx": epoch_idx if optimizer is not None else None,
+            "train_loss_idx": train_loss_idx if optimizer is not None else None,
+        },
+        name
+    )
+
+
+def load_state_dict(name, model, optimizer=None, scheduler=None):
+    """Loads the model state dictionary.
+
+    Args:
+        model (torch.nn.Module): The model.
+        optimizer (torch.optim.Optimizer): The optimizer.
+        scheduler (torch.optim.lr_scheduler._LRScheduler): The scheduler.
+
+    Returns:
+        float: The training loss.
+        float: The dev loss.
+        float: The training accuracy.
+        float: The dev accuracy.
+        int: The epoch index.
+        int: The train loss index.
+    """
+
+    checkpoint = torch.load(name)
+    model.load_state_dict(checkpoint["model_state_dict"])
+    if optimizer is not None:
+        optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+    if scheduler is not None:
+        scheduler.load_state_dict(checkpoint["scheduler_state_dict"])
+        
+    train_loss = checkpoint.get("train_loss", None)
+    dev_loss = checkpoint.get("dev_loss", None)
+    train_accuracy = checkpoint.get("train_accuracy", None)
+    dev_accuracy = checkpoint.get("dev_accuracy", None)
+    epoch_idx = checkpoint.get("epoch_idx", None)
+    train_loss_idx = checkpoint.get("train_loss_idx", None)
+    return train_loss, dev_loss, train_accuracy, dev_accuracy, epoch_idx, train_loss_idx
     
 
-def fen_to_array(fen):
+def fen_to_array(board):
     """Converts a FEN string to a numpy array representation of the chess board.
     
     Each position is converted as binary array of size 773.
@@ -119,14 +128,14 @@ def fen_to_array(fen):
     The last 4 positions represent the castling rights (KQkq).
 
     Args:
-        fen (str): The FEN string representing the chess board.
+        board (str or chess.Board): The FEN string or the chess board.
 
     Returns:
         numpy.ndarray: A numpy array representation of the chess board.
     """
 
     # Initialize the board and the arrays of piece types and colors.
-    board = chess.Board(fen)
+    board = chess.Board(board) if isinstance(board, str) else board
     piece_types = [chess.PAWN, chess.ROOK, chess.KNIGHT, chess.BISHOP, chess.QUEEN, chess.KING]
     colors = [chess.WHITE, chess.BLACK]
 
