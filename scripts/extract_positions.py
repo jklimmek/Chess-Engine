@@ -72,9 +72,6 @@ def process_pgn_file(file_path, num_positions, skip_first_n_moves=5):
     # Initialize counters for number of games where white and black won.
     white_games, black_games = 0, 0
 
-    # Initialize progress bar.
-    pbar = tqdm()
-
     # Open PGN file.
     with open(file_path, "r") as pgn_file:
 
@@ -97,34 +94,20 @@ def process_pgn_file(file_path, num_positions, skip_first_n_moves=5):
                 black_wins_positions.extend(extract_random_positions_from_game(game, num_positions, skip_first_n_moves))
                 black_games += 1
 
-            # Update progress bar.
-            pbar.update(1)
-
-    # Close progress bar.
-    pbar.close()
-
     # Return tuple of positions and number of games won by white and black.
     return white_wins_positions, black_wins_positions, white_games, black_games
-
-
-def validate_two_file_names(value):
-    """Validates that exactly two file names are provided."""
-
-    values = value.split(',')
-    if len(values) != 2:
-        raise argparse.ArgumentTypeError("Exactly two file names are required.")
-    return values
 
 
 def parse_args():
     """Parses command line arguments."""
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--pgn-file", type=str, required=True, help="The path to the PGN file.")
+    parser.add_argument("--pgn-files", type=str, required=True, help="The path to the PGN files.")
     parser.add_argument("--output-dir", type=str, required=True, help="The directory to save the positions.")
-    parser.add_argument("--num-positions", type=int, default=10, help="The number of positions to extract from each game. If there are fewer positions in a game, all positions will be extracted.")
+    parser.add_argument("--num-positions", type=int, default=15, help="The number of positions to extract from each game. If there are fewer positions in a game, all positions will be extracted.")
     parser.add_argument("--skip-first-n-moves", type=int, default=5, help="The number of moves to skip at the beginning of each game.")
-    parser.add_argument("--file-names", default="white.txt,black.txt", type=validate_two_file_names, help="Specify exactly two file names separated by a comma. E.g. white.txt,black.txt")
+    parser.add_argument("--file-names", default="white.txt,black.txt", type=str, help="Specify exactly two file names separated by a comma. E.g. white.txt,black.txt")
+    parser.add_argument("--dedup", action="store_true", help="Whether to remove duplicate positions.")
     parser.add_argument("--verbose", action="store_true", help="Whether to print logs.")
     return parser.parse_args()
 
@@ -134,12 +117,27 @@ def main():
     # Parse command line arguments.
     args = parse_args()
 
-    # Process PGN file to extract positions.
-    white_pos, black_pos, white_games, black_games = process_pgn_file(
-        file_path = args.pgn_file,
-        num_positions = args.num_positions,
-        skip_first_n_moves = args.skip_first_n_moves
-    )
+    # Initialize result variables.
+    white_pos, black_pos = [], []
+    white_games, black_games = 0, 0
+
+    # Loop through PGN files.
+    files = os.listdir(args.pgn_files)
+    for name in tqdm(files, total=len(files), ncols=100):
+            
+            # Extract positions from PGN file.
+            if name.endswith(".pgn"): 
+                wp, bp, wg, bg = process_pgn_file(
+                    file_path=os.path.join(args.pgn_files, name),
+                    num_positions=args.num_positions,
+                    skip_first_n_moves=args.skip_first_n_moves
+                )
+
+                # Add positions and number of games to result variables.
+                white_pos.extend(wp)
+                black_pos.extend(bp)
+                white_games += wg
+                black_games += bg
 
     # Configure logging if verbose mode is enabled.
     if args.verbose:
@@ -149,16 +147,25 @@ def main():
     os.makedirs(args.output_dir, exist_ok=True)
 
     # Set output file names.
-    white_name, black_name = args.file_names
+    white_name, black_name = args.file_names.split(",")
 
     # Log statistics if verbose mode is enabled.
-    if args.verbose:
-        logging.info(f"White wins: {white_games:,}")
-        logging.info(f"Black wins: {black_games:,}")
-        logging.info(f"Total wins: {white_games + black_games:,}")
-        logging.info(f"White positions: {len(white_pos):,}")
-        logging.info(f"Black positions: {len(black_pos):,}")
-        logging.info(f"Total positions: {len(white_pos) + len(black_pos):,}")
+    logging.info(f"White wins: {white_games:,}")
+    logging.info(f"Black wins: {black_games:,}")
+    logging.info(f"Total wins: {white_games + black_games:,}")
+    logging.info(f"White positions: {len(white_pos):,}")
+    logging.info(f"Black positions: {len(black_pos):,}")
+    logging.info(f"Total positions: {len(white_pos) + len(black_pos):,}")
+
+    # Remove duplicate positions if dedup mode is enabled.
+    if args.dedup:
+        white_pos = list(set(white_pos))
+        black_pos = list(set(black_pos))
+
+        # Log statistics if verbose mode is enabled.
+        logging.info(f"White positions (dedup): {len(white_pos):,}")
+        logging.info(f"Black positions (dedup): {len(black_pos):,}")
+        logging.info(f"Total positions (dedup): {len(white_pos) + len(black_pos):,}")
 
     # Write positions to output files.
     write_txt(white_pos, os.path.join(args.output_dir, white_name))
