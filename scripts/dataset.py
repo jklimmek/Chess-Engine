@@ -7,9 +7,9 @@ from .utils import *
 class DeepChessDataset(Dataset):
     """A dataset for training DeepChess engine.
 
-    This dataset takes a list of one-hot encoded chess positions.
-    The dataset will return a tuple of the position and the label.
-    The label represents which move is preffered.
+    Training exmaple is constructed by randomly choosing one of the white positions and one of the black positions 
+    and the side where to put white. Hence, the pair is either (W, L) or (L, W) where W is the position where
+    white won and L is the position where white lost.
     """
 
     def __init__(self, white_positions, black_positions, poses_per_epoch=1000000):
