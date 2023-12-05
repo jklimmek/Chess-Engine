@@ -15,6 +15,7 @@ class Engine:
     One thing to keep in mind is that speed depends on search depth and the number of positions in the cache.
     Thus, it is recommended to set the search depth to 3 or lower.
 
+    # todo: implement opening book
     Model was trained to compare positions starting from the 5th move, so it struggles in the opening.
     Thus, during the opening the engine will either mimic the opponent's move or play one of the 
     hardcoded openings.
