@@ -7,7 +7,7 @@ The `scrape_games.py` script was employed to fetch and filter chess games featur
 
 
 ## Models
-Instead of using a Deep Belief Network (DBN), I employed a regular autoencoder (AE) with a Leaky ReLU activation function. The AE was initially trained to extract essential features from bitboards, employing an encoder architecture of 773-600-400-200-100. Subsequently, the extracted features were concatenated and fed into the Deep-Chess (DC) model of architecture 200-400-200-100-2. This model compares positions and outputs the superior one from white's perspective. Deep-Chess uses modified version of minimax algorithm with alpha-beta prunnig to determine best move. Instead of asigning to each position numerical value, model directly compares positions and outputs the best one.
+Instead of using a Deep Belief Network (DBN), I employed a regular autoencoder (AE) with a Leaky ReLU activation function. The AE was initially trained to extract essential features from bitboards, employing an encoder architecture of 773-600-400-200-100. Subsequently, the extracted features were concatenated and fed into the Deep-Chess (DC) model of architecture 200-400-200-100-2. This model compares positions and outputs the superior one from white's perspective. Deep-Chess uses modified version of minimax algorithm with alpha-beta prunnig to determine best move. Instead of asigning to each position numerical value, model directly compares positions and outputs the best one. Optimal value for depth in minimax is 3, since time required for search rises exponentialy.
 
 
 ## Training
@@ -17,7 +17,7 @@ During DC training, one position where white won (W) and one where black won (L)
 
 
 ## Results
-To be honest, the obtained results fell short of expectations. Despite experimenting with various hyperparameters, I was unable to surpass a 90% accuracy on the validation set. Interestingly, the authors of the paper claimed to achieve training and validation accuracies of 98.2% and 98.0%, respectively. However, after thorough research, no concrete evidence or results were found to corroborate their claims. It's worth noting that this disparity could potentially be attributed to the use of a regular autoencoder instead of a DBN as suggested in the paper. Optimal value for depth in minimax is 3, since time required for search rises exponentialy.
+To be honest, the obtained results fell short of expectations. Despite experimenting with various hyperparameters, I was unable to surpass a 90% accuracy on the validation set. Interestingly, the authors of the paper claimed to achieve training and validation accuracies of 98.2% and 98.0%, respectively. However, after thorough research, no concrete evidence or results were found to corroborate their claims. It's worth noting that this disparity could potentially be attributed to the use of a regular autoencoder instead of a DBN as suggested in the paper.
 
 
 ## Run Locally
