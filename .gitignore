@@ -4,5 +4,4 @@ scripts/__pycache__/
 logs/
 runs/
 models/
-app.py
 commands.md
