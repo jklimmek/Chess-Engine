@@ -14,6 +14,10 @@ class Engine:
 
     One thing to keep in mind is that speed depends on search depth and the number of positions in the cache.
     Thus, it is recommended to set the search depth to 3 or lower.
+
+    Model was trained to compare positions starting from the 5th move, so it struggles in the opening.
+    Thus, during the opening the engine will either mimic the opponent's move or play one of the 
+    hardcoded openings.
     """
 
 
@@ -34,6 +38,7 @@ class Engine:
         self._depth = depth
         self._device = device
         self.move = None
+        self.total_moves = 0
 
         self.MIN_INF = float("-inf")
         self.MAX_INF = float("inf")
@@ -90,7 +95,7 @@ class Engine:
         """
 
         # If the terminal node is reached or the game is over, return the current position.
-        if depth > self._depth or board.is_game_over():
+        if depth >= self._depth or board.is_game_over():
             return board
         
         # White's turn.
@@ -210,7 +215,8 @@ class Engine:
             
             v_bitboard = self.__get_bitboard(v)
 
-            n_v = self.__minimax_alpha_beta(n_board, self._color, 1, alpha, beta)
+            # todo: currently model can only play as white, add support for black
+            n_v = self.__minimax_alpha_beta(n_board, False, 1, alpha, beta)
             n_v_bitboard = self.__get_bitboard(n_v)
             best_v = self._model.compare(v_bitboard, n_v_bitboard)[0]
 

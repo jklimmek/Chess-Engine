@@ -1,4 +1,5 @@
 import streamlit as st
+import chess
 from scripts.engine import Engine
 from scripts.deepchess import DeepChess
 from scripts.autoencoder import AE
@@ -10,7 +11,7 @@ from scripts.utils import *
 # todo: add mechanism to go revert to previous move
 # todo: add comments and docstrings
 
-MODEL_PATH = "runs/deepchess_bs512_lr0.01/epoch-76_loss-0.1761_train_acc-0.9212_dev_acc-0.8962.pth"
+MODEL_PATH = "runs/deepchess_bs512_lr0.01/epoch-100_loss-0.1638_train_acc-0.9270_dev_acc-0.9008.pth"
 
 
 class Slider:
@@ -77,7 +78,8 @@ class Slider:
 
 @st.cache_resource()
 def load_model():
-    print("Loading model...")
+    """Load the model and the autoencoder."""
+
     model = DeepChess(AE().encoder)
     _ = load_state_dict(MODEL_PATH, model)
     return model
@@ -93,13 +95,18 @@ def main():
     '''
 
     st.markdown(css, unsafe_allow_html=True)
-    st.title("DeepChess")
+    st.title("♟️ DeepChess")
 
     tab1, tab2, tab3 = st.tabs(["Play", "Settings", "About"])
 
     with tab1:
         st.subheader("Play against the engine")
-        st.button("Start new game")
+        start = st.button("Start new game")
+
+        if start:
+            pass
+
+
 
     with tab2:
         search_depth = Slider(
@@ -138,8 +145,11 @@ def main():
         verbose = True if verbose == "Verbose" else False
         search_depth = search_depth.value
 
-        if search_depth > 3:
-            st.info("Search depth higher than 3 is not recommended. The search speed will decrease significantly.")
+        if search_depth == 1:
+            st.info("Search depth of 1 is not recommended. The model will only evaluate the current position.")
+
+        elif search_depth > 4:
+            st.info("Search depth higher than 4 is not recommended. The search speed will decrease significantly.")
 
     with tab3:
         st.markdown(
