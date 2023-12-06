@@ -17,7 +17,7 @@ During DC training, one position where white won (W) and one where black won (L)
 
 
 ## Results
-To be honest, the obtained results fell short of expectations. Despite experimenting with various hyperparameters, I was unable to surpass a 90% accuracy on the validation set. Interestingly, the authors of the paper claimed to achieve training and validation accuracies of 98.2% and 98.0%, respectively. However, after thorough research, no concrete evidence or results were found to corroborate their claims. It's worth noting that this disparity could potentially be attributed to the use of a regular autoencoder instead of a DBN as suggested in the paper.
+To be honest, the obtained results fell short of expectations. Despite experimenting with various hyperparameters, I was unable to surpass a 90% accuracy on the validation set. Interestingly, the authors of the paper claimed to achieve training and validation accuracies of 98.2% and 98.0%, respectively. However, after thorough research, no concrete evidence or results were found to corroborate their claims. It's worth noting that this disparity could potentially be attributed to the use of a regular autoencoder instead of a DBN as suggested in the paper. Overall, the model is capable of playing decent chess and with enough time and search depth it could beat an average chess enjoyer.
 
 
 ## Run Locally
