@@ -3,5 +3,4 @@ notebooks/
 scripts/__pycache__/
 logs/
 runs/
-models/
 commands.md
