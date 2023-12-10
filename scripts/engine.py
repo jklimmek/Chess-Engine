@@ -13,15 +13,15 @@ class Engine:
     Usually after a few moves search speed increases significantly.
 
     One thing to keep in mind is that speed depends on search depth and the number of positions in the cache.
-    Thus, it is recommended to set the search depth to 3 or lower.
+    Thus, it is recommended to set the search depth to 3 or lower. Currently model can only play as white.
 
-    # todo: implement opening book
+    # todo: Implement opening book.
     Model was trained to compare positions starting from the 5th move, so it struggles in the opening.
     Thus, during the opening the engine will either mimic the opponent's move or play one of the 
     hardcoded openings.
     """
 
-    def __init__(self, model, color, depth, input_format="uci", device="cpu", verbose=False):
+    def __init__(self, model, color, depth, input_format="uci", device="cpu"):
         """Initializes the engine.
 
         Args:
@@ -30,22 +30,32 @@ class Engine:
             depth (int): The depth of the search tree.
             input_format (str): The input format. Can be either "uci" or "san".
             device (str): The device to use for evaluation. Can be either "cpu" or "cuda".
-            verbose (bool): Whether to print the search tree.
         """
         
+        # Initialize the model.
         self._model = model
         self._model.eval()
         self._model.to(device)
+        # todo: Implement posibility for model to play as black.
         self._color = color
         self._depth = depth
         self._input_format = input_format
         self._device = device
-        self._verbose = verbose
 
+        # Constants for alpha-beta pruning.
         self.MIN_INF = float("-inf")
         self.MAX_INF = float("inf")
 
+        # Condition to break out of the game after the player makes types `break` in the console.
+        # Without it kernel will crash when interrupting the game.
+        self.stop_game = False
+
+        # Hash table to store the bitboard of each position.
+        # This speeds up the search significantly.
         self.position_hash_table = {}
+
+        # Number of times the engine retrieved a position from the hash table.
+        self.retrieved_from_hash_table = 0
 
 
     def __hash_position(self, board):
@@ -71,6 +81,7 @@ class Engine:
         """Returns the bitboard of the current position."""
         cached_values = self.__get_cached_values(board)
         if cached_values is not None:
+            self.retrieved_from_hash_table += 1
             return cached_values
         bitboard = torch.tensor(fen_to_array(board), dtype=torch.float32)[None, :].to(self._device)
         bitboard = self._model.extract(bitboard)
@@ -142,7 +153,7 @@ class Engine:
             return v 
 
 
-    def __engine_move(self, board):
+    def engine_move(self, board):
         """
         Selects the best move for the AI engine using the minimax algorithm with alpha-beta pruning.
 
@@ -193,7 +204,7 @@ class Engine:
         return board
 
 
-    def __player_move(self, board):
+    def player_move(self, board):
         """
         Allows the player to make a move on the chessboard. Handles user input and updates the board accordingly.
 
@@ -206,7 +217,6 @@ class Engine:
 
         while True:
             try:
-                # Prompt the player for a move input.
                 move = input()
 
                 # Check if the player wants to break out of the game.
@@ -215,14 +225,11 @@ class Engine:
                     break
 
                 # Attempt to apply the player's move to the board.
-                board.push_uci(move)
-
-                # Break out of the loop if the move is valid.
+                board.push_uci(move) if self._input_format == "uci" else board.push_san(move)
                 break
 
             # Handle the case where the input is not a valid move.
             except ValueError:
-                # Allow the player to enter a valid move by continuing the loop.
                 pass
 
         # Return the updated board after the player makes a move.
