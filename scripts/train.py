@@ -62,7 +62,7 @@ def train_autoencoder(args):
     # Initialize optimizer, scheduler, and criterion.
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
     scheduler = optim.lr_scheduler.ExponentialLR(optimizer, gamma=args.gamma)
-    criterion = nn.MSELoss(reduction="sum")
+    criterion = nn.MSELoss()
 
     # Create save path and logs path.
     save_path = os.path.join(args.save_path, args.comment)
